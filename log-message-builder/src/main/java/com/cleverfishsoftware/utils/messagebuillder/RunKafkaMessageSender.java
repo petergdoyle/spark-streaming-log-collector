@@ -14,8 +14,8 @@ public class RunKafkaMessageSender {
 
     public static void main(String[] args) throws IOException {
 
-        //create a kafka producer 
-        InputStream resourceAsStream = RunKafkaMessageSender.class.getClassLoader().getResourceAsStream("resources/kafka-0.10.2.1-producer.properties");
+        //create a kafka producer
+        InputStream resourceAsStream = RunKafkaMessageSender.class.getClassLoader().getResourceAsStream("kafka-0.10.2.1-producer.properties");
         Properties kafkaProducerProperties = new Properties();
         kafkaProducerProperties.load(resourceAsStream);
         KafkaMessageSender kafkaMessageSender = new KafkaMessageSender(kafkaProducerProperties);

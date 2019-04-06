@@ -6,7 +6,7 @@
             "RollingFile": {
                 "name": "File",
                 "fileName": "./logs/log-message-builder.log",
-                "filePattern": ".  /logs/log-message-builder-backup-%d{MM-dd-yy-HH-mm-ss}-%i.log.gz",
+                "filePattern": ".  /logs/log-message-builder-backup-%d{yyyy-MM-dd'T'HH:mm:ss,SSSHH}-%i.log.gz",
                 "PatternLayout": {
                     "pattern": "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"
                 },

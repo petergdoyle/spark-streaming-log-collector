@@ -31,7 +31,6 @@ public class RunLogMessageBuilderToFile {
                     + "size - the number of messages to write to file \n\n");
             System.exit(1);
         }
-        System.out.println("ready to start...");
         // each class must declare it's own logger and pass it to the LogBuilder or else we lose class level log scope
         org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(RunLogMessageBuilderToFile.class.getName());
         Lorem lorem = LoremIpsum.getInstance();
@@ -40,7 +39,7 @@ public class RunLogMessageBuilderToFile {
         int randWordLenMax=15;
         int relatedMsgCntMin = 2;
         int relatedMsgCntMax = 8;
-        System.out.println("about to start...");
+        System.out.println("generating log messages...");
         for (int i = 0; i < limit; i++) {
 
             LogMessage.Level randomLevel = LogMessage.Level.getRandomLevel(random);
@@ -48,16 +47,9 @@ public class RunLogMessageBuilderToFile {
 
             if (randomLevel.equals(LogMessage.Level.error) || randomLevel.equals(LogMessage.Level.fatal)) {
 
-                // log the error
-                String body = lorem.getWords(randWordLenMin, randWordLenMax);
-                new LogMessage.Builder(LOGGER, randomLevel, body)
-                        .addTag("trackId", trackingId)
-                        .addTag("identifier", randomLevel.toString())
-                        .log();
-
-                // generate other message related to the error 
+                String body;
+                // generate other message related to the error with the same trackingId 
                 int r = random.nextInt((relatedMsgCntMax - relatedMsgCntMin) + 1) + relatedMsgCntMin;
-                System.out.println("trackingId=" + trackingId + "r=" + r);
                 for (int j = 0; j < r; j++) {
                     
                     body = lorem.getWords(randWordLenMin, randWordLenMax);
@@ -70,6 +62,14 @@ public class RunLogMessageBuilderToFile {
                             .addTag("identifier", randomLevel.toString())
                             .log();
                 }
+                
+                // log the error itself last 
+                body = lorem.getWords(randWordLenMin, randWordLenMax);
+                new LogMessage.Builder(LOGGER, LogMessage.Level.error, body)
+                        .addTag("trackId", trackingId)
+                        .addTag("identifier",  LogMessage.Level.error.toString())
+                        .log();
+
             } else {
                 String body = lorem.getWords(randWordLenMin, randWordLenMax);
                 new LogMessage.Builder(LOGGER, randomLevel, body)
@@ -79,6 +79,7 @@ public class RunLogMessageBuilderToFile {
 
             }
         }
+        System.out.println("done");
 
     }
 
