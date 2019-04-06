@@ -36,26 +36,42 @@ public class RunLogMessageBuilderToFile {
         org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(RunLogMessageBuilderToFile.class.getName());
         Lorem lorem = LoremIpsum.getInstance();
         Random random = new Random();
-        int min = 2;
-        int max = 6;
+        int randWordLenMin=5;
+        int randWordLenMax=15;
+        int relatedMsgCntMin = 2;
+        int relatedMsgCntMax = 8;
         System.out.println("about to start...");
         for (int i = 0; i < limit; i++) {
-            
+
             LogMessage.Level randomLevel = LogMessage.Level.getRandomLevel(random);
             String trackingId = UUID.randomUUID().toString();
-            
+
             if (randomLevel.equals(LogMessage.Level.error) || randomLevel.equals(LogMessage.Level.fatal)) {
-                int r = random.nextInt((max - min) + 1) + min;
+
+                // log the error
+                String body = lorem.getWords(randWordLenMin, randWordLenMax);
+                new LogMessage.Builder(LOGGER, randomLevel, body)
+                        .addTag("trackId", trackingId)
+                        .addTag("identifier", randomLevel.toString())
+                        .log();
+
+                // generate other message related to the error 
+                int r = random.nextInt((relatedMsgCntMax - relatedMsgCntMin) + 1) + relatedMsgCntMin;
                 System.out.println("trackingId=" + trackingId + "r=" + r);
                 for (int j = 0; j < r; j++) {
-                    String body = lorem.getWords(5, 10);
+                    
+                    body = lorem.getWords(randWordLenMin, randWordLenMax);
+                    do {
+                        randomLevel = LogMessage.Level.getRandomLevel(random);
+                    } while (randomLevel.equals(LogMessage.Level.error) || randomLevel.equals(LogMessage.Level.fatal));
+
                     new LogMessage.Builder(LOGGER, randomLevel, body)
                             .addTag("trackId", trackingId)
                             .addTag("identifier", randomLevel.toString())
                             .log();
                 }
             } else {
-                String body = lorem.getWords(5, 10);
+                String body = lorem.getWords(randWordLenMin, randWordLenMax);
                 new LogMessage.Builder(LOGGER, randomLevel, body)
                         .addTag("trackId", trackingId)
                         .addTag("identifier", randomLevel.toString())
