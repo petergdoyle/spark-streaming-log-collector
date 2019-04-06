@@ -17,8 +17,6 @@ Vagrant.configure("2") do |config|
   config.vm.box = "petergdoyle/CentOS-7-x86_64-Minimal-1511"
   config.ssh.insert_key = false
 
-  config.vm.network "forwarded_port", guest: 8080, host: 8080 # spark master web ui port
-
   config.vm.provider "virtualbox" do |vb|
  #   vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     vb.customize ["modifyvm", :id, "--cpuexecutioncap", "80"]
@@ -61,34 +59,32 @@ EOF
     echo -e "openjdk-8 already appears to be installed."
   fi
 
-  # install maven 3
   eval 'mvn -version' > /dev/null 2>&1
   if [ $? -eq 127 ]; then
 
     maven_home="/usr/maven/default"
     download_url="https://www-eu.apache.org/dist/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz"
 
-    echo "downloading $download_url..."
     if [ ! -d /usr/maven ]; then
       mkdir -pv /usr/maven
     fi
 
+    echo "downloading $download_url..."
     cmd="curl -O $download_url \
       && tar -xvf apache-maven-3.6.0-bin.tar.gz -C /usr/maven \
       && ln -s /usr/maven/apache-maven-3.6.0 $maven_home \
       && rm -f apache-maven-3.6.0-bin.tar.gz"
     eval "$cmd"
 
-    export MAVEN_HOME=$maven_home
-    cat <<EOF >>/etc/profile.d/maven.sh
+        export MAVEN_HOME=$maven_home
+        cat <<EOF >>/etc/profile.d/maven.sh
 export MAVEN_HOME=$MAVEN_HOME
-export PATH=\$PATH:\$MAVEN_HOME/bin
+export PATH=\\$PATH:\\$MAVEN_HOME/bin
 EOF
 
   else
-    echo -e "apache-maven-3.6.0 already appears to be installed. skipping."
+    echo -e "apache-maven-3.6.0 already appears to be installed."
   fi
-
 
   # install scala 2.11
   eval 'scala -version' > /dev/null 2>&1
@@ -111,19 +107,20 @@ EOF
         export SCALA_HOME=$scala_home
         cat <<EOF >>/etc/profile.d/scala.sh
 export SCALA_HOME=$SCALA_HOME
-export PATH=\$PATH:\$SCALA_HOME/bin
+export PATH=\\$PATH:\\$SCALA_HOME/bin
 EOF
 
   else
-    echo -e "scala-2.11 already appears to be installed. skipping."
+    echo -e "scala-2.11 already appears to be installed."
   fi
 
   # install spark 2.11
   eval 'spark-submit --version' > /dev/null 2>&1
+
   if [ $? -eq 127 ]; then
 
     spark_home="/usr/spark/default"
-    download_url="https://www-us.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz"
+    download_url="https://www-us.apache.org/dist/spark/spark-2.4.1/spark-2.4.1-bin-hadoop2.7.tgz"
 
     if [ ! -d /usr/spark ]; then
       mkdir -pv /usr/spark
@@ -131,28 +128,24 @@ EOF
 
     echo "downloading $download_url..."
     cmd="curl -O $download_url \
-      && tar -xvf  spark-2.4.0-bin-hadoop2.7.tgz -C /usr/spark \
-      && ln -s /usr/spark/spark-2.4.0-bin-hadoop2.7 $spark_home \
-      && rm -f spark-2.4.0-bin-hadoop2.7.tgz"
+      && tar -xvf  spark-2.4.1-bin-hadoop2.7.tgz -C /usr/spark \
+      && ln -s /usr/spark/spark-2.4.1-bin-hadoop2.7 $spark_home \
+      && rm -f spark-2.4.1-bin-hadoop2.7.tgz"
     eval "$cmd"
 
         export SPARK_HOME=$spark_home
         cat <<EOF >>/etc/profile.d/spark.sh
 export SPARK_HOME=$SPARK_HOME
-export PATH=\$PATH:\$SPARK_HOME/bin
+export PATH=\\$PATH:\\$SPARK_HOME/bin
 EOF
     # spark nodes need a checkpoint directory to keep state should a node go down
-    if [ ! -d "/spark/checkpoint" ] then
+    if [ ! -d "/spark/checkpoint" ]; then
       mkdir -p "/spark/checkpoint"
       chmod ugo+rw "/spark/checkpoint/"
     fi
 
-#     # change log levels for standalone runtime
-#     # cp -fv $SPARK_HOME/conf/log4j.properties.template $SPARK_HOME/conf/log4j.properties
-#     # sed -i 's/WARN/ERROR/g' $SPARK_HOME/conf/log4j.properties
-#     # sed -i 's/INFO/ERROR/g' $SPARK_HOME/conf/log4j.properties
   else
-    echo -e "spark-2.11 already appears to be installed. skipping."
+    echo -e "spark-2.11 already appears to be installed."
   fi
 
   # modify environment for vagrant user
