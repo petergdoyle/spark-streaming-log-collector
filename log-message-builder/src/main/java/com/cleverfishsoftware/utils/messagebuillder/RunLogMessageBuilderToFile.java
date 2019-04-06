@@ -6,10 +6,9 @@ import org.apache.logging.log4j.LogManager;
 import static com.cleverfishsoftware.utils.messagebuillder.LogMessage.Level.info;
 import com.thedeanda.lorem.Lorem;
 import com.thedeanda.lorem.LoremIpsum;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  */
@@ -32,27 +31,37 @@ public class RunLogMessageBuilderToFile {
                     + "size - the number of messages to write to file \n\n");
             System.exit(1);
         }
+        System.out.println("ready to start...");
         // each class must declare it's own logger and pass it to the LogBuilder or else we lose class level log scope
         org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(RunLogMessageBuilderToFile.class.getName());
         Lorem lorem = LoremIpsum.getInstance();
-        // create instance of Random class 
-        Random rand = new Random();
-        SecureRandom prng = SecureRandom.getInstance("SHA1PRNG");
-        //generate a random number
-        String randomNum = Integer.toString(prng.nextInt());
-        //get its digest
-        MessageDigest sha = MessageDigest.getInstance("SHA-1");
         Random random = new Random();
+        int min = 2;
+        int max = 6;
+        System.out.println("about to start...");
         for (int i = 0; i < limit; i++) {
-            // build the message with random data
-            byte[] result = sha.digest(randomNum.getBytes());
-            String trackingId = hexEncode(result);
-            String body = lorem.getWords(5, 10);
+            
             LogMessage.Level randomLevel = LogMessage.Level.getRandomLevel(random);
-            new LogMessage.Builder(LOGGER, info, body)
-                    .addTag("trackId", trackingId)
-                    .addTag("identifier", randomLevel.toString())
-                    .log();
+            String trackingId = UUID.randomUUID().toString();
+            
+            if (randomLevel.equals(LogMessage.Level.error) || randomLevel.equals(LogMessage.Level.fatal)) {
+                int r = random.nextInt((max - min) + 1) + min;
+                System.out.println("trackingId=" + trackingId + "r=" + r);
+                for (int j = 0; j < r; j++) {
+                    String body = lorem.getWords(5, 10);
+                    new LogMessage.Builder(LOGGER, randomLevel, body)
+                            .addTag("trackId", trackingId)
+                            .addTag("identifier", randomLevel.toString())
+                            .log();
+                }
+            } else {
+                String body = lorem.getWords(5, 10);
+                new LogMessage.Builder(LOGGER, randomLevel, body)
+                        .addTag("trackId", trackingId)
+                        .addTag("identifier", randomLevel.toString())
+                        .log();
+
+            }
         }
 
     }
