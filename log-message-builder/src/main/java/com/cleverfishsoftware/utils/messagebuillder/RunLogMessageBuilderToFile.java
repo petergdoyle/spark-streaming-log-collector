@@ -50,7 +50,7 @@ public class RunLogMessageBuilderToFile {
 
             if (randomLevel.equals(LogMessage.Level.error) || randomLevel.equals(LogMessage.Level.fatal)) {
 
-                // generate other message related to the error with the same trackingId 
+                // generate other log messages related to the error with the same trackingId 
                 int r = random.nextInt((relatedMsgCntMax - relatedMsgCntMin) + 1) + relatedMsgCntMin;
                 for (int j = 0; j < r; j++) {
                     do {
@@ -63,8 +63,7 @@ public class RunLogMessageBuilderToFile {
 
                 }
 
-                // log the error itself last 
-                String rl = randomLevel.toString();
+                // log the error itself last a little later so it appears after all the related log messages
                 executor.schedule(() -> {
                     new LogMessage.Builder(LOGGER, LogMessage.Level.error, lorem.getWords(randWordLenMin, randWordLenMax))
                             .addTag("trackId", trackingId)
@@ -73,6 +72,8 @@ public class RunLogMessageBuilderToFile {
                 }, 1500, MILLISECONDS);
 
             } else {
+                
+                // log the non error normally 
                 new LogMessage.Builder(LOGGER, randomLevel, lorem.getWords(randWordLenMin, randWordLenMax))
                         .addTag("trackId", trackingId)
                         .addTag("identifier", randomLevel.toString())
