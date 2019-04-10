@@ -27,7 +27,7 @@ public class LogMessage {
         info,
         error,
         fatal;
-        public static Level getRandomLevel(Random random) {
+        public static Level getRandomLevel(final Random random) {
             return values()[random.nextInt(values().length)];
         }
     }
